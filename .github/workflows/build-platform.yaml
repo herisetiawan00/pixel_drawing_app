@@ -2,7 +2,7 @@ name: Flutter Build
 run-name: ${{ github.actor }} is building the application ⚙️
 on: [push]
 jobs:
-  Build Windows:
+  build-windows:
     runs-on: windows-latest
     steps:
       - name: Clone repository
@@ -12,8 +12,8 @@ jobs:
         with:
           channel: stable
           flutter-version: 3.19.5
-      - run: flutter build linux
-  Build Linux:
+      - run: flutter build windows
+  build-linux:
     runs-on: ubuntu-latest
     steps:
       - name: Clone repository
