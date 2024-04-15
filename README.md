@@ -1,6 +1,6 @@
-# Pixel Perfect: Open-Source Pixel Art Editor
+# FlutterPixl: Open-Source Pixel Art Editor
 
-Unleash your inner artist with Pixel Perfect, an open-source pixel art editor! Create stunning pixel art for games, animations, or simply for fun. Feel free to contribute to the project and help make it even better!
+Unleash your inner artist with FlutterPixl, an open-source pixel art editor! Create stunning pixel art for games, animations, or simply for fun. Feel free to contribute to the project and help make it even better!
 
 ## Feature(s)
 
