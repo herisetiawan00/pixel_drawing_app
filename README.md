@@ -29,3 +29,6 @@ Unleash your inner artist with Pixel Perfect, an open-source pixel art editor! C
 * Flutter: 3.19.5
 
 ## Screenshot(s)
+![Screenshot from 2024-04-15 21-15-41](https://github.com/herisetiawan00/pixel_drawing_app/assets/36474174/bb2f7349-11b4-4f9d-b52a-af5975bbc782)
+![Screenshot from 2024-04-15 21-15-30](https://github.com/herisetiawan00/pixel_drawing_app/assets/36474174/1f685824-e627-48fc-9858-56aa91f0ea4d)
+![Screenshot from 2024-04-15 21-03-27](https://github.com/herisetiawan00/pixel_drawing_app/assets/36474174/a1971321-76c4-45fd-b510-82dc914bbcab)
