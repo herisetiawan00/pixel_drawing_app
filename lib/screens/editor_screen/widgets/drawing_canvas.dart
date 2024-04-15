@@ -37,14 +37,10 @@ class _DrawingAreaState extends State<DrawingCanvas> {
     final column = ((index - row) / EditorData.instance.size.width);
 
     final fillAreas = [
-      _coordinateToIndex(row - 1, column - 1),
       _coordinateToIndex(row, column - 1),
-      _coordinateToIndex(row + 1, column - 1),
       _coordinateToIndex(row - 1, column),
       _coordinateToIndex(row + 1, column),
-      _coordinateToIndex(row - 1, column + 1),
       _coordinateToIndex(row, column + 1),
-      _coordinateToIndex(row + 1, column + 1),
     ];
     for (var area in fillAreas) {
       if (area.isNegative) {
@@ -79,11 +75,89 @@ class _DrawingAreaState extends State<DrawingCanvas> {
     }
   }
 
+  int get countCollumn => EditorData.instance.size.height.toInt();
+  int get countRow => EditorData.instance.size.width.toInt();
+  double get boxSize => 20.0;
+  Size get canvasSize => Size(countRow * boxSize, countCollumn * boxSize);
+
+  Widget _buildLayerCanvas([String? layerName]) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(
+        countCollumn,
+        (colNum) => Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(
+            countRow,
+            (rowNum) {
+              final index = colNum * countRow + rowNum;
+              return ListenableBuilder(
+                listenable: Listenable.merge([
+                  EditorData.instance.canvasNotifier,
+                ]),
+                builder: (context, _) {
+                  if (layerName != null) {
+                    final color = EditorData.instance.getIndex(
+                      index.toInt(),
+                      layer: layerName,
+                    );
+                    return Container(
+                      height: boxSize,
+                      width: boxSize,
+                      decoration: BoxDecoration(
+                        color: color,
+                        border: Border.all(
+                          width: 1,
+                          color: color!,
+                          strokeAlign: BorderSide.strokeAlignInside,
+                        ),
+                      ),
+                    );
+                  }
+
+                  return MouseRegion(
+                    onEnter: (_) {
+                      if (_isDragging) {
+                        _triggerBoxAction(index);
+                      }
+                    },
+                    child: GestureDetector(
+                      onTap: () => _triggerBoxAction(index),
+                      child: Container(
+                        height: boxSize,
+                        width: boxSize,
+                        decoration: BoxDecoration(
+                          border: EditorData.instance.grid
+                              ? Border(
+                                  top: BorderSide(
+                                    color: Colors.black45,
+                                    style: colNum == 0
+                                        ? BorderStyle.none
+                                        : BorderStyle.solid,
+                                  ),
+                                  left: BorderSide(
+                                    color: Colors.black45,
+                                    style: rowNum == 0
+                                        ? BorderStyle.none
+                                        : BorderStyle.solid,
+                                  ),
+                                )
+                              : null,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final countCollumn = EditorData.instance.size.height.toInt();
-    final countRow = EditorData.instance.size.width.toInt();
-    const boxSize = 20.0;
     return GestureDetector(
       onPanStart: (_) => _isDragging = true,
       onPanEnd: (_) => _isDragging = false,
@@ -100,8 +174,8 @@ class _DrawingAreaState extends State<DrawingCanvas> {
         builder: (BuildContext context, BoxConstraints constraints) {
           if (!_initialized) {
             final offset = Offset(
-              (constraints.maxWidth - (countRow * boxSize)) / 2,
-              (constraints.maxHeight - (countCollumn * boxSize)) / 2,
+              (constraints.maxWidth - canvasSize.width) / 2,
+              (constraints.maxHeight - canvasSize.height) / 2,
             );
             boxPosition.value = offset;
             _initialized = true;
@@ -125,61 +199,17 @@ class _DrawingAreaState extends State<DrawingCanvas> {
                     decoration: BoxDecoration(
                       border: Border.all(),
                     ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: List.generate(
-                        countCollumn,
-                        (colNum) => Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: List.generate(
-                            countRow,
-                            (rowNum) {
-                              final index = colNum * countRow + rowNum;
-                              return ListenableBuilder(
-                                listenable: Listenable.merge([
-                                  EditorData.instance.notifier,
-                                  EditorData.instance.globalNotifier,
-                                ]),
-                                builder: (context, _) {
-                                  final color = EditorData.instance.getIndex(
-                                    index.toInt(),
-                                  );
-                                  return MouseRegion(
-                                    onEnter: (_) {
-                                      if (_isDragging) {
-                                        _triggerBoxAction(index);
-                                      }
-                                    },
-                                    child: GestureDetector(
-                                      onTap: () => _triggerBoxAction(index),
-                                      child: Container(
-                                        height: boxSize,
-                                        width: boxSize,
-                                        decoration: BoxDecoration(
-                                          color: color,
-                                          border: EditorData.instance.grid
-                                              ? Border(
-                                                  top: BorderSide(
-                                                    style: colNum == 0
-                                                        ? BorderStyle.none
-                                                        : BorderStyle.solid,
-                                                  ),
-                                                  left: BorderSide(
-                                                    style: rowNum == 0
-                                                        ? BorderStyle.none
-                                                        : BorderStyle.solid,
-                                                  ),
-                                                )
-                                              : null,
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                        ),
+                    child: ListenableBuilder(
+                      listenable: EditorData.instance.globalNotifier,
+                      builder: (BuildContext context, Widget? _) => Stack(
+                        children: [
+                          ...EditorData.instance.layers
+                              .where((layer) => !layer.hidden)
+                              .map(
+                                (layer) => _buildLayerCanvas(layer.name),
+                              ),
+                          _buildLayerCanvas(),
+                        ],
                       ),
                     ),
                   ),

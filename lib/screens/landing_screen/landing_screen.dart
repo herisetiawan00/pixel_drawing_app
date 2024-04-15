@@ -1,5 +1,8 @@
 import 'package:desktop_drop/desktop_drop.dart';
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
+import 'package:pixel_drawing_app/screens/editor_screen/editor_data.dart';
+import 'package:pixel_drawing_app/screens/routes/routes_constants.dart';
 import 'package:pixel_drawing_app/screens/widgets/menu_bar/menu_bar_widget.dart';
 import 'package:pixel_drawing_app/screens/widgets/new_file/new_file_widget.dart';
 
@@ -19,25 +22,33 @@ class LandingScreen extends StatelessWidget {
                   child: DropTarget(
                     enable: true,
                     onDragDone: (detail) async {
-                      debugPrint('onDragDone:');
-                      for (final file in detail.files) {
-                        debugPrint('  ${file.path} ${file.name}'
-                            '  ${await file.lastModified()}'
-                            '  ${await file.length()}'
-                            '  ${file.mimeType}');
+                      final file = detail.files.firstOrNull;
+                      final result = await EditorData.instance.initializeFile(
+                        XFile(file?.path ?? ''),
+                      );
+                      if (result && context.mounted) {
+                        Navigator.of(context).pushNamed(RouteList.editor);
                       }
                     },
-                    child: Container(
-                      margin: const EdgeInsets.all(44),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black12,
-                          width: 5,
+                    child: GestureDetector(
+                      onTap: () async {
+                        final result = await EditorData.instance.openProject();
+                        if (result && context.mounted) {
+                          Navigator.of(context).pushNamed(RouteList.editor);
+                        }
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.all(44),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Colors.black12,
+                            width: 5,
+                          ),
+                          borderRadius: BorderRadius.circular(32),
                         ),
-                        borderRadius: BorderRadius.circular(32),
-                      ),
-                      child: const Center(
-                        child: Text('Drop file or click to Open'),
+                        child: const Center(
+                          child: Text('Drop file or click to Open'),
+                        ),
                       ),
                     ),
                   ),
@@ -53,13 +64,31 @@ class LandingScreen extends StatelessWidget {
                     children: [
                       MaterialButton(
                         color: Colors.white,
-                        // textColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(4),
                         ),
                         onPressed: () => NewFileWidget.createDialog(context),
                         child: const Text(
-                          'Create new file',
+                          'Create new project',
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 16,
+                      ),
+                      MaterialButton(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        onPressed: () async {
+                          final result =
+                              await EditorData.instance.openProject();
+                          if (result && context.mounted) {
+                            Navigator.of(context).pushNamed(RouteList.editor);
+                          }
+                        },
+                        child: const Text(
+                          'Open project',
                         ),
                       ),
                       const Spacer(),
